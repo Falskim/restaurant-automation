@@ -6,25 +6,29 @@
 package database;
 
 import java.sql.*;
+import java.util.*;
+import java.io.*;
 
 /**
  *
  * @author Axioo
  */
-public class DatabaseConnector {
+public class Database {
 
     final private String DRIVER = "com.mysql.jdbc.Driver";
     final private String URL = "jdbc:mysql://localhost:3306/";
-    final private String DB = "kasir";
+    final private String DB = "restaurant";
     final private String USER = "root";
     final private String PASS = "";
+//    final private String IMPORT_PATH = System.getProperty("user.dir") 
+//                                        + "\\sql\\restaurant.sql";
     
-    private ResultSet rs;
-    private Statement st;
-    private Connection con;
-    private String query;
+    protected ResultSet rs;
+    protected Statement st;
+    protected Connection con;
+    protected String query;
     
-    public DatabaseConnector() {
+    public Database() {
         try{
             Class.forName(DRIVER);
             con = DriverManager.getConnection(URL, USER, PASS);
@@ -51,13 +55,19 @@ public class DatabaseConnector {
                 st.execute(query);
                 System.out.println("Database " + DB + " created successfuly");
             }catch(SQLException er){
-                System.err.println("Failed to Create Database " + DB);
+                System.err.println("Failed to create database " + DB);
             }
         }
+        importingTable();
     }
-    
-    public static void main(String[] args){
-        DatabaseConnector run = new DatabaseConnector();
+    private void importingTable(){
+        String path = System.getProperty("user.dir") + "\\sql\\import.bat";
+        System.out.println(path);
+        try{
+            Process p = Runtime.getRuntime().exec("cmd /c start " + path);
+            p.waitFor();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
     }
-    
 }

@@ -4,7 +4,9 @@
  * and open the template in the editor.
  */
 package customer;
+
 import java.util.*;
+import database.*;
 
 /**
  *
@@ -16,55 +18,53 @@ public class Customer extends javax.swing.JFrame {
      * Creates new form Customer
      */
     
+    private final CRUD db = new CRUD();
+    private ArrayList<Menu> order = new ArrayList<>();
     private ArrayList<Menu> food;
+    private ArrayList<Menu> drink;
+    
+    private Menu selectedMenu; //Current selected menu
     private long totalPrice;
     
     public Customer() {
         initComponents();
-        food = new ArrayList<>();
-        createMenuList();
-        Home.setVisible(true);
-        Menu.setVisible(false);
-        Transaksi.setVisible(false);
-        Status.setVisible(false);
-        totalPrice = 0;
+        createMenu();
     }
     
-    private void createMenuList(){
-        Menu[] foods =  {new Menu("Ayam Goreng", 15000),
-                        new Menu("Nasi Goreng", 10000),
-                        new Menu("Ikan Bakar", 20000)
-                        };
-        this.food.addAll(Arrays.asList(foods));
+    private void createMenu(){
+        food = db.getMenuDetail("food");
+        drink = db.getMenuDetail("drink");
+        setMenuButtonText();
     }
-    private void setMenuDetail(boolean isFood, int index){
-        if(isFood){
-            lbNamaMenu.setText(food.get(index).getName());
-            tfHargaProdukSatuan.setText("Rp. " + Integer.toString(food.get(index).getPrice()));
-        }else{
-            //TODO Drink
+    private void setMenuButtonText(){
+        btMakanan1.setText(food.get(0).getName());
+        btMakanan2.setText(food.get(1).getName());
+        btMakanan3.setText(food.get(2).getName());
+        
+        btMinuman1.setText(drink.get(0).getName());
+        btMinuman2.setText(drink.get(1).getName());
+        btMinuman3.setText(drink.get(2).getName());
+    }
+    private void setMenuDetail(String type, int index){ 
+        if(type.equals("food")){
+            selectedMenu = food.get(index);
         }
+        if(type.equals("drink")){
+            selectedMenu = drink.get(index);
+        }
+        lbNamaMenu.setText(selectedMenu.getName());
+        tfHargaProdukSatuan.setText("Rp. " + Integer.toString(selectedMenu.getPrice()));
         spPorsiProduk.setValue(0);
         tfHargaProdukTotal.setText("Rp. 0");   
+    }
+    private void addMenuOrder(){
+        order.add(selectedMenu);
     }
     private void updateTotalPrice(){
         tfTotalBiaya.setText(Long.toString(totalPrice));
         tfTotalBiaya1.setText(Long.toString(totalPrice));
     }
-    class Menu{
-        private String nama;
-        private int harga;
-        Menu(String nama, int harga){
-            this.nama = nama;
-            this.harga = harga;
-        }
-        public String getName(){
-            return nama;
-        }
-        public int getPrice(){
-            return harga;
-        }
-    }   
+       
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -87,6 +87,9 @@ public class Customer extends javax.swing.JFrame {
         btMakanan3 = new javax.swing.JButton();
         ScrollPanelMinuman = new javax.swing.JScrollPane();
         MenuMinuman = new javax.swing.JPanel();
+        btMinuman1 = new javax.swing.JButton();
+        btMinuman2 = new javax.swing.JButton();
+        btMinuman3 = new javax.swing.JButton();
         lbDaftarMenu = new javax.swing.JLabel();
         lbNamaMenu = new javax.swing.JLabel();
         lbHargaProdukSatuan = new javax.swing.JLabel();
@@ -112,6 +115,7 @@ public class Customer extends javax.swing.JFrame {
         tfTotalKembalian = new javax.swing.JTextField();
         lbStatusPembayaran = new javax.swing.JLabel();
         btKembaliTransaksi = new javax.swing.JButton();
+        btBayar = new javax.swing.JButton();
         Status = new javax.swing.JPanel();
         lbPembayaran1 = new javax.swing.JLabel();
         lbMasukanNoTransaksi = new javax.swing.JLabel();
@@ -123,6 +127,11 @@ public class Customer extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
 
         btPesan.setText("Pesan");
         btPesan.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -146,11 +155,11 @@ public class Customer extends javax.swing.JFrame {
         HomeLayout.setHorizontalGroup(
             HomeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, HomeLayout.createSequentialGroup()
-                .addContainerGap(107, Short.MAX_VALUE)
+                .addContainerGap(109, Short.MAX_VALUE)
                 .addGroup(HomeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(HomeLayout.createSequentialGroup()
                         .addComponent(btPesan, javax.swing.GroupLayout.PREFERRED_SIZE, 179, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 206, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 207, Short.MAX_VALUE)
                         .addComponent(btCekStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(lbHome))
                 .addGap(135, 135, 135))
@@ -163,7 +172,7 @@ public class Customer extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, HomeLayout.createSequentialGroup()
                 .addGap(58, 58, 58)
                 .addComponent(lbHome, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 171, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 168, Short.MAX_VALUE)
                 .addGroup(HomeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btPesan, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btCekStatus, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -174,7 +183,7 @@ public class Customer extends javax.swing.JFrame {
 
         Menu.setPreferredSize(new java.awt.Dimension(800, 600));
 
-        btMakanan1.setText("Ayam Bakar");
+        btMakanan1.setText("Makanan 1");
         btMakanan1.setPreferredSize(new java.awt.Dimension(150, 150));
         btMakanan1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -182,7 +191,7 @@ public class Customer extends javax.swing.JFrame {
             }
         });
 
-        btMakanan2.setText("Nasi Goreng");
+        btMakanan2.setText("Makanan 2");
         btMakanan2.setPreferredSize(new java.awt.Dimension(150, 150));
         btMakanan2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mousePressed(java.awt.event.MouseEvent evt) {
@@ -190,7 +199,7 @@ public class Customer extends javax.swing.JFrame {
             }
         });
 
-        btMakanan3.setText("Ikan Bakar");
+        btMakanan3.setText("Makanan 3");
         btMakanan3.setPreferredSize(new java.awt.Dimension(150, 150));
         btMakanan3.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -202,21 +211,13 @@ public class Customer extends javax.swing.JFrame {
         MenuMakanan.setLayout(MenuMakananLayout);
         MenuMakananLayout.setHorizontalGroup(
             MenuMakananLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(MenuMakananLayout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MenuMakananLayout.createSequentialGroup()
+                .addContainerGap(69, Short.MAX_VALUE)
                 .addGroup(MenuMakananLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MenuMakananLayout.createSequentialGroup()
-                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btMakanan2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(MenuMakananLayout.createSequentialGroup()
-                        .addGroup(MenuMakananLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(MenuMakananLayout.createSequentialGroup()
-                                .addGap(21, 21, 21)
-                                .addComponent(btMakanan1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(MenuMakananLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(btMakanan3, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addGap(0, 205, Short.MAX_VALUE)))
-                .addContainerGap())
+                    .addComponent(btMakanan1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btMakanan2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btMakanan3, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(62, 62, 62))
         );
         MenuMakananLayout.setVerticalGroup(
             MenuMakananLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -227,27 +228,64 @@ public class Customer extends javax.swing.JFrame {
                 .addComponent(btMakanan2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btMakanan3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(16, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         ScrollPanelMakanan.setViewportView(MenuMakanan);
 
         TabMenu.addTab("Makanan", ScrollPanelMakanan);
 
+        btMinuman1.setText("Minuman 1");
+        btMinuman1.setPreferredSize(new java.awt.Dimension(150, 150));
+        btMinuman1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btMinuman1MouseClicked(evt);
+            }
+        });
+
+        btMinuman2.setText("Minuman 2");
+        btMinuman2.setPreferredSize(new java.awt.Dimension(150, 150));
+        btMinuman2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                btMinuman2MousePressed(evt);
+            }
+        });
+
+        btMinuman3.setText("Minuman 3");
+        btMinuman3.setPreferredSize(new java.awt.Dimension(150, 150));
+        btMinuman3.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                btMinuman3MouseClicked(evt);
+            }
+        });
+
         javax.swing.GroupLayout MenuMinumanLayout = new javax.swing.GroupLayout(MenuMinuman);
         MenuMinuman.setLayout(MenuMinumanLayout);
         MenuMinumanLayout.setHorizontalGroup(
             MenuMinumanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 586, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MenuMinumanLayout.createSequentialGroup()
+                .addContainerGap(69, Short.MAX_VALUE)
+                .addGroup(MenuMinumanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btMinuman1, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btMinuman2, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btMinuman3, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(62, 62, 62))
         );
         MenuMinumanLayout.setVerticalGroup(
             MenuMinumanLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 513, Short.MAX_VALUE)
+            .addGroup(MenuMinumanLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(btMinuman1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btMinuman2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btMinuman3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(33, Short.MAX_VALUE))
         );
 
         ScrollPanelMinuman.setViewportView(MenuMinuman);
 
-        TabMenu.addTab("Minuman", ScrollPanelMinuman);
+        TabMenu.addTab("Makanan", ScrollPanelMinuman);
 
         lbDaftarMenu.setFont(new java.awt.Font("Trebuchet MS", 0, 36)); // NOI18N
         lbDaftarMenu.setText("Daftar Menu");
@@ -320,7 +358,7 @@ public class Customer extends javax.swing.JFrame {
                         .addComponent(btLanjut, javax.swing.GroupLayout.PREFERRED_SIZE, 119, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(MenuLayout.createSequentialGroup()
                         .addGroup(MenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(TabMenu, javax.swing.GroupLayout.DEFAULT_SIZE, 501, Short.MAX_VALUE)
+                            .addComponent(TabMenu, javax.swing.GroupLayout.DEFAULT_SIZE, 505, Short.MAX_VALUE)
                             .addGroup(MenuLayout.createSequentialGroup()
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(lbDaftarMenu)))
@@ -331,7 +369,7 @@ public class Customer extends javax.swing.JFrame {
                                     .addGroup(MenuLayout.createSequentialGroup()
                                         .addComponent(lbHargaProdukSatuan)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                        .addComponent(tfHargaProdukSatuan, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE))
+                                        .addComponent(tfHargaProdukSatuan, javax.swing.GroupLayout.DEFAULT_SIZE, 192, Short.MAX_VALUE))
                                     .addGroup(MenuLayout.createSequentialGroup()
                                         .addComponent(lbHargaProdukTotal)
                                         .addGap(21, 21, 21)
@@ -341,13 +379,10 @@ public class Customer extends javax.swing.JFrame {
                                         .addGap(13, 13, 13)
                                         .addComponent(spPorsiProduk))
                                     .addComponent(tfTotalBiaya)
+                                    .addComponent(lbTotalBiaya)
                                     .addGroup(MenuLayout.createSequentialGroup()
-                                        .addGroup(MenuLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(lbTotalBiaya)
-                                            .addGroup(MenuLayout.createSequentialGroup()
-                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                                .addComponent(lbNamaMenu)))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))))
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 114, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                        .addComponent(lbNamaMenu))))
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, MenuLayout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btTambahMenu)
@@ -412,6 +447,11 @@ public class Customer extends javax.swing.JFrame {
         lbUangAnda.setText("Uang Anda");
 
         tfInputUang.setText("Rp. 0");
+        tfInputUang.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                tfInputUangFocusGained(evt);
+            }
+        });
 
         lbTotalKembalian.setFont(new java.awt.Font("Trebuchet MS", 0, 14)); // NOI18N
         lbTotalKembalian.setText("Total Kembalian");
@@ -430,42 +470,51 @@ public class Customer extends javax.swing.JFrame {
             }
         });
 
+        btBayar.setText("Bayar");
+        btBayar.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                btBayarMousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout TransaksiLayout = new javax.swing.GroupLayout(Transaksi);
         Transaksi.setLayout(TransaksiLayout);
         TransaksiLayout.setHorizontalGroup(
             TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(TransaksiLayout.createSequentialGroup()
                 .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, TransaksiLayout.createSequentialGroup()
-                            .addContainerGap()
-                            .addComponent(lbTotalKembalian)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(tfTotalKembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(TransaksiLayout.createSequentialGroup()
-                                .addGap(289, 289, 289)
-                                .addComponent(lbPembayaran))
-                            .addGroup(TransaksiLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(lbTotalBiaya1)
-                                    .addComponent(lbUangAnda))
-                                .addGap(35, 35, 35)
-                                .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(tfInputUang, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tfTotalBiaya1, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(tfNoTransaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE)))))
                     .addGroup(TransaksiLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(lbNoTransaksi))
-                    .addGroup(TransaksiLayout.createSequentialGroup()
-                        .addGap(262, 262, 262)
-                        .addComponent(btKembaliTransaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(TransaksiLayout.createSequentialGroup()
-                        .addGap(287, 287, 287)
-                        .addComponent(lbStatusPembayaran)))
-                .addContainerGap(57, Short.MAX_VALUE))
+                        .addComponent(lbTotalKembalian)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(tfTotalKembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(TransaksiLayout.createSequentialGroup()
+                            .addGap(289, 289, 289)
+                            .addComponent(lbPembayaran))
+                        .addGroup(TransaksiLayout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addComponent(lbTotalBiaya1)
+                                .addComponent(lbUangAnda))
+                            .addGap(35, 35, 35)
+                            .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(tfInputUang, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tfTotalBiaya1, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(tfNoTransaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 579, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                    .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(btBayar, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(TransaksiLayout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(lbNoTransaksi))
+                            .addGroup(TransaksiLayout.createSequentialGroup()
+                                .addGap(262, 262, 262)
+                                .addComponent(btKembaliTransaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(TransaksiLayout.createSequentialGroup()
+                                .addGap(287, 287, 287)
+                                .addComponent(lbStatusPembayaran)))))
+                .addContainerGap(63, Short.MAX_VALUE))
         );
         TransaksiLayout.setVerticalGroup(
             TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -488,9 +537,11 @@ public class Customer extends javax.swing.JFrame {
                 .addGroup(TransaksiLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(tfTotalKembalian, javax.swing.GroupLayout.PREFERRED_SIZE, 30, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lbTotalKembalian))
-                .addGap(64, 64, 64)
+                .addGap(18, 18, 18)
+                .addComponent(btBayar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 78, Short.MAX_VALUE)
                 .addComponent(lbStatusPembayaran)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 153, Short.MAX_VALUE)
+                .addGap(81, 81, 81)
                 .addComponent(btKembaliTransaksi, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(23, 23, 23))
         );
@@ -500,8 +551,6 @@ public class Customer extends javax.swing.JFrame {
 
         lbMasukanNoTransaksi.setFont(new java.awt.Font("Trebuchet MS", 0, 14)); // NOI18N
         lbMasukanNoTransaksi.setText("Masukan No Transaksi Anda");
-
-        tfInputTransaksi.setText("Rp. 0");
 
         lbStatusPesanan.setFont(new java.awt.Font("Tahoma", 0, 18)); // NOI18N
         lbStatusPesanan.setText("Status Pesanan");
@@ -574,11 +623,11 @@ public class Customer extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 806, Short.MAX_VALUE)
+            .addGap(0, 809, Short.MAX_VALUE)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(Home, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 806, Short.MAX_VALUE))
+                .addComponent(Menu, javax.swing.GroupLayout.DEFAULT_SIZE, 809, Short.MAX_VALUE))
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
@@ -643,15 +692,15 @@ public class Customer extends javax.swing.JFrame {
     }//GEN-LAST:event_btCekStatusMousePressed
 
     private void btMakanan2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMakanan2MousePressed
-        setMenuDetail(true, 1);
+        setMenuDetail("food", 1);
     }//GEN-LAST:event_btMakanan2MousePressed
 
     private void btMakanan3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMakanan3MouseClicked
-        setMenuDetail(true, 2);
+        setMenuDetail("food", 2);
     }//GEN-LAST:event_btMakanan3MouseClicked
 
     private void btMakanan1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMakanan1MouseClicked
-        setMenuDetail(true, 0);
+        setMenuDetail("food", 0);
     }//GEN-LAST:event_btMakanan1MouseClicked
 
     private void spPorsiProdukStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_spPorsiProdukStateChanged
@@ -678,6 +727,34 @@ public class Customer extends javax.swing.JFrame {
         spPorsiProduk.setValue(0);
         updateTotalPrice();
     }//GEN-LAST:event_btTambahMenuMousePressed
+
+    private void btMinuman1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMinuman1MouseClicked
+        setMenuDetail("drink", 0);
+    }//GEN-LAST:event_btMinuman1MouseClicked
+
+    private void btMinuman2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMinuman2MousePressed
+        setMenuDetail("drink", 1);
+    }//GEN-LAST:event_btMinuman2MousePressed
+
+    private void btMinuman3MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btMinuman3MouseClicked
+        setMenuDetail("drink", 2);
+    }//GEN-LAST:event_btMinuman3MouseClicked
+
+    private void btBayarMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_btBayarMousePressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btBayarMousePressed
+
+    private void tfInputUangFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_tfInputUangFocusGained
+        tfInputUang.setText("");
+    }//GEN-LAST:event_tfInputUangFocusGained
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        Home.setVisible(true);
+        Menu.setVisible(false);
+        Transaksi.setVisible(false);
+        Status.setVisible(false);
+        totalPrice = 0;
+    }//GEN-LAST:event_formComponentShown
 
     /**
      * @param args the command line arguments
@@ -730,6 +807,7 @@ public class Customer extends javax.swing.JFrame {
     private javax.swing.JPanel Status;
     private javax.swing.JTabbedPane TabMenu;
     private javax.swing.JPanel Transaksi;
+    private javax.swing.JButton btBayar;
     private javax.swing.JButton btCekStatus;
     private javax.swing.JButton btKembaliMenu;
     private javax.swing.JButton btKembaliStatus;
@@ -738,6 +816,9 @@ public class Customer extends javax.swing.JFrame {
     private javax.swing.JButton btMakanan1;
     private javax.swing.JButton btMakanan2;
     private javax.swing.JButton btMakanan3;
+    private javax.swing.JButton btMinuman1;
+    private javax.swing.JButton btMinuman2;
+    private javax.swing.JButton btMinuman3;
     private javax.swing.JButton btPesan;
     private javax.swing.JButton btTambahMenu;
     private javax.swing.JLabel lbBanyakPorsi;
